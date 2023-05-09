@@ -10,7 +10,7 @@ string ReadString(string text) //проглатывает в стринг стр
     System.Console.WriteLine(text);
     return Console.ReadLine();
 }
-int IsIt(char ChSourse)
+int IsItAcceptable(char ChSourse)
 //Проверяет, является ли данный символ допустимым  IsTheLetterSoundingLetterOfRussianAlphabet
 //-1 == не является, 1 == является
 {
@@ -24,46 +24,75 @@ int IsIt(char ChSourse)
     };
     return ResI;
 }
-int CountNotAcceptable(string text) //для данного на входе стринга находит число "недопустимых" букв
-// то есть не входящих в эталонный стринг =алфавит
+int CountNotAcceptable(string text)
+//для данного на входе стринга находит число "недопустимых" букв, 
+// то есть не входящих в эталонный стринг =алфавит, за исключением пробелов
+// и запоминает их положение (индекс) в исходном стринге
 {
+    int[] PositionOfBlanks = new int[128];
+    int[] PositionOfNonAcceptables = new int[128];
+    int CountBlanks = 0; PositionOfBlanks[0] = 0;
     int CountAliens = 0;
     if (text.Length > 0)
     {
         for (int i = 0; i < text.Length; i++)
         {
-            if (IsIt(text[i]) <= 0 && text[i] !=' ')
+            if (IsItAcceptable(text[i]) <= 0)
             {
-                CountAliens++;
+                if (text[i] != ' ')
+                {
+                    PositionOfNonAcceptables[CountAliens] = i;
+                    CountAliens++;
+                }
+                else //(text[i] == ' ')
+                {
+                    CountBlanks++;
+                    PositionOfBlanks[0] = CountBlanks;//в нулевую ячейку массива PositionOfBlanks пишем число пробелов
+                    PositionOfBlanks[CountBlanks] = i;
+                }
+            }
+        }
+        // блок контрольной печати результатов
+        System.Console.WriteLine($" недопустимых символов {CountAliens}");
+        if (CountAliens > 0)
+        {
+            for (int i = 0; i < CountAliens; i++)
+            {
+                int j = PositionOfNonAcceptables[i];
+                System.Console.WriteLine($" {i}: недопустимая буква: {text[j]}  на позиции {PositionOfNonAcceptables[i]},");
+            };
+        };
+
+        System.Console.WriteLine($" пробелов {CountBlanks} = {PositionOfBlanks[0]}");
+        for (int i = 1; i <= CountBlanks; i++)
+        {
+            System.Console.WriteLine($" пробел номер {i} на позиции {PositionOfBlanks[i]}, ");
+        };
+    };
+    return CountAliens;
+}
+int CountDifTwins(string text) //для данного на входе стринга находит число пар "близнецов":
+// символ на i-м месте с начала совпадает с символом на i-м месте с конца 
+{
+    int CountDif = 0;
+    if (text.Length > 0)
+    {
+        int centre = text.Length / 2 - 1;
+        // int IndFirst = 0;
+        int Last = text.Length - 1;
+        for (int i = 0; i <= centre; i++)
+        {
+            //System.Console.Write($" {i}-й слева символ   {text[i]}   VS");
+            //System.Console.WriteLine($" {i}-й справа символ   {text[Last - i]}");
+            if (text[i] != text[Last - i])
+            {
+                CountDif++;
             }
         }
     }
-    System.Console.WriteLine($" недопустимых символов {CountAliens}");
-    return CountAliens;
+    //System.Console.WriteLine($" разных пар символов {CountDif}");
+    return CountDif;
 }
-// int CountDifTwins(string text) //для данного на входе стринга находит число пар "близнецов":
-// // символ на i-м месте с начала совпадает с символом на i-м месте с конца 
-// {
-//     int CountDif = 0;
-//     if (text.Length > 0)
-//     {
-//         int Last = text.Length - 1;
-//         int centre = text.Length / 2 - 1;
-//         int IndFirst = 0;
-//         int IndLast = text.Length - 1;
-//         for (int i = 0; i <= centre; i++)
-//         {
-//             //System.Console.Write($" {i}-й слева символ   {text[i]}   VS");
-//             //System.Console.WriteLine($" {i}-й справа символ   {text[Last - i]}");
-//             if (text[i] != text[Last - i])
-//             {
-//                 CountDif++;
-//             }
-//         }
-//     }
-//     //System.Console.WriteLine($" разных пар символов {CountDif}");
-//     return CountDif;
-// }
 
 string Word = ReadString("Введите текст (от 1 до 128 символов):");
 if (Word.Length > 0)
@@ -73,25 +102,25 @@ if (Word.Length > 0)
         System.Console.WriteLine("Warning: Вводимая фраза слишком длинная (более 128 символов)");
     };
     int CountNA = CountNotAcceptable(Word);
-    if (CountNotAcceptable(Word) == 0)
+    if (CountNA == 0)
     {
         System.Console.WriteLine($" введенный текст:");
         System.Console.WriteLine(Word);
         System.Console.WriteLine($" является допустимым");
     }
     else { System.Console.WriteLine($" введенный текст содержит недопустимые буквы"); }
-    // int CountDif = CountDifTwins(Word);
-    // if (CountDifTwins(Word) == 0)
-    // {
-    //     System.Console.WriteLine($" введенный текст:");
-    //     System.Console.WriteLine(Word);
-    //     System.Console.WriteLine($" является допустимым")
-    //     //System.Console.WriteLine($" является палиандром");
-    // }
-    // else { System.Console.WriteLine($" введенный текст не является палиандром"); }
+    int CountDif = CountDifTwins(Word);
+    if (CountDifTwins(Word) == 0)
+    {
+        System.Console.WriteLine($" введенный текст:");
+        System.Console.WriteLine(Word);
+        //System.Console.WriteLine($" является допустимым");
+        System.Console.WriteLine($" является палиандром");
+    }
+    else { System.Console.WriteLine($" введенный текст не является палиандром"); }
 }
 else
 {
     System.Console.WriteLine(" Вы ввели пустой стринг. Повторите ввод.");
-}
+};
 
